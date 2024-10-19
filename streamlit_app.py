@@ -100,29 +100,29 @@ elif section == "Adversarial Attacks":
 elif section == "Explainability":
     st.header("Explainability with SHAP")
 
-    # Use DeepExplainer for the model
+    # Use KernelExplainer as a fallback for performance
     if 'explainer' not in st.session_state:
-        # Use DeepExplainer with a subset of training data
-        st.session_state.explainer = shap.DeepExplainer(model, X_train[:10])  # No need to use .values
+        st.session_state.explainer = shap.KernelExplainer(model.predict, X_train[:100])  # Limit train data
 
     try:
         with st.spinner("Calculating SHAP values..."):
-            # Calculate SHAP values for the test set
-            shap_values = st.session_state.explainer.shap_values(X_test)  # No need to use .values
+            sample_size = min(50, len(X_test))  # Limit to 50 samples for speed
+            X_sample = X_test[:sample_size]
+            shap_values = st.session_state.explainer.shap_values(X_sample)
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
         fig, ax = plt.subplots()
-        shap.summary_plot(shap_values[0], features=X_test, plot_type="dot", show=False)
+        shap.summary_plot(shap_values, features=X_sample, plot_type="dot", show=False)
         st.pyplot(fig)
 
         # Per-transaction explanation (force plot)
         st.subheader("Per-Transaction Explanation")
-        idx = st.slider("Select Transaction Index", 0, len(X_test) - 1, value=3)
-        st.write(f"Transaction: {X_test.iloc[idx]}")
+        idx = st.slider("Select Transaction Index", 0, sample_size - 1)
+        st.write(f"Transaction: {X_sample.iloc[idx]}")
 
         # Show SHAP force plot for the selected transaction
-        force_plot = shap.force_plot(st.session_state.explainer.expected_value[0].numpy(), shap_values[0][idx], features=X_test.iloc[idx])
+        force_plot = shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], features=X_sample.iloc[idx])
         st.components.v1.html(force_plot.html(), width=800, height=400)
 
     except Exception as e:
