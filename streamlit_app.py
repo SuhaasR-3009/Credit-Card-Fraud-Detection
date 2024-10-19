@@ -99,10 +99,10 @@ elif section == "Adversarial Attacks":
 # Explainability Section
 elif section == "Explainability":
     st.header("Explainability with SHAP")
-    
+
     # Initialize the explainer if not already done
     if 'explainer' not in st.session_state:
-        # Use KernelExplainer instead of DeepExplainer
+        # Use KernelExplainer as a fallback
         st.session_state.explainer = shap.KernelExplainer(model.predict, X_train)
 
     # Limit the sample size for SHAP calculation
@@ -118,12 +118,12 @@ elif section == "Explainability":
         st.subheader("Feature Importance Plot (SHAP)")
         shap.summary_plot(shap_values, X_sample, show=False)
         st.pyplot()
-        
+
         # Per-transaction explanation
         st.subheader("Per-Transaction Explanation")
         idx = st.slider("Select Transaction Index", 0, sample_size - 1)
         st.write(f"Transaction: {X_sample[idx]}")
-        
+
         # Show SHAP force plot for the selected transaction
         shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True)
         st.pyplot()
