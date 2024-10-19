@@ -116,8 +116,11 @@ elif section == "Explainability":
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
-        shap.summary_plot(shap_values, X_sample, show=False)
-        st.pyplot()
+        
+        # Create a figure and axis for the summary plot
+        fig, ax = plt.subplots()
+        shap.summary_plot(shap_values, X_sample, show=False, ax=ax)  # Pass the ax to the summary plot
+        st.pyplot(fig)  # Pass the figure to st.pyplot
 
         # Per-transaction explanation
         st.subheader("Per-Transaction Explanation")
@@ -125,11 +128,13 @@ elif section == "Explainability":
         st.write(f"Transaction: {X_sample[idx]}")
 
         # Show SHAP force plot for the selected transaction
-        shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True)
-        st.pyplot()
+        fig_force, ax_force = plt.subplots()  # Create a new figure for the force plot
+        shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True, ax=ax_force)
+        st.pyplot(fig_force)  # Pass the figure to st.pyplot
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
+
 
 # Interactive Prediction Tool Section
 elif section == "Interactive Prediction Tool":
