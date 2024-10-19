@@ -100,33 +100,30 @@ elif section == "Adversarial Attacks":
 elif section == "Explainability":
     st.header("Explainability with SHAP")
 
-    # Initialize the explainer if not already done
+    # Use DeepExplainer for the model
     if 'explainer' not in st.session_state:
-        # Use KernelExplainer as a fallback
-        st.session_state.explainer = shap.KernelExplainer(model.predict, X_train)
+        # Use DeepExplainer with a subset of training data
+        st.session_state.explainer = shap.DeepExplainer(model, X_train[:10].values)  # Only use a subset to speed up SHAP computation
 
-    # Limit the sample size for SHAP calculation
-    sample_size = min(100, len(X_test))  # Adjust the sample size as needed
-    X_sample = X_test[:sample_size]
-
-    # Calculate SHAP values
     try:
         with st.spinner("Calculating SHAP values..."):
-            shap_values = st.session_state.explainer.shap_values(X_sample)
+            # Calculate SHAP values for the test set
+            shap_values = st.session_state.explainer.shap_values(X_test.values)
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
-        shap.summary_plot(shap_values, X_sample, show=True)
-        st.pyplot()
+        fig, ax = plt.subplots()
+        shap.summary_plot(shap_values[0], features=X_test, plot_type="dot", show=False)
+        st.pyplot(fig)
 
-        # Per-transaction explanation
+        # Per-transaction explanation (force plot)
         st.subheader("Per-Transaction Explanation")
-        idx = st.slider("Select Transaction Index", 0, sample_size - 1)
-        st.write(f"Transaction: {X_sample[idx]}")
+        idx = st.slider("Select Transaction Index", 0, len(X_test) - 1, value=3)
+        st.write(f"Transaction: {X_test.iloc[idx]}")
 
         # Show SHAP force plot for the selected transaction
-        shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True)
-        st.pyplot()
+        force_plot = shap.force_plot(st.session_state.explainer.expected_value[0].numpy(), shap_values[0][idx], features=X_test.iloc[idx])
+        st.components.v1.html(force_plot.html(), width=800, height=400)
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
