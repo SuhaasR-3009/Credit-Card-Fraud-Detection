@@ -117,9 +117,9 @@ elif section == "Explainability":
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
         
-        # Create a figure and axis for the summary plot
+        # Create a figure for the summary plot
         fig, ax = plt.subplots()
-        shap.summary_plot(shap_values, X_sample, show=False, ax=ax)  # Pass the ax to the summary plot
+        shap.summary_plot(shap_values, X_sample, show=False)  # Do not pass ax here
         st.pyplot(fig)  # Pass the figure to st.pyplot
 
         # Per-transaction explanation
@@ -134,6 +134,7 @@ elif section == "Explainability":
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
+
 
 
 # Interactive Prediction Tool Section
