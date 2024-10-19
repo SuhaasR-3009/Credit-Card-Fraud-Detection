@@ -42,8 +42,6 @@ y_test = np.concatenate((y_test_class_0, y_test_class_1))
 smote = SMOTE(random_state=42)
 X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
-@@ -39,74 +63,92 @@ def build_model():
-
 # Build and train the model
 model = build_model()
 class_weight = {0: 1, 1: 5}  # Give more weight to fraud cases
