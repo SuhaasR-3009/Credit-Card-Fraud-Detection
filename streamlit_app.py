@@ -22,7 +22,7 @@ def st_shap(plot, height=None):
 
 # Split dataset into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+feature_names = list(X_train.columns)
 # Function to create adversarial examples
 def generate_adversarial_examples(X, epsilon=0.1):
     noise = np.random.normal(0, epsilon, X.shape)  # Generate Gaussian noise
@@ -111,7 +111,7 @@ elif section == "Explainability":
         shap_values = explainer.shap_values(X_test)           # Get SHAP values for test data
 
     # SHAP Summary Plot (Feature Importance)
-    shap.summary_plot(shap_values[0], features=X_test, plot_type="dot")
+    shap.summary_plot(shap_values[0], features=X_test, plot_type="dot",feature_names=feature_names)
     st.pyplot()  # Display the SHAP summary plot in Streamlit
 
     # Per-transaction explanation (Force Plot)
