@@ -100,15 +100,13 @@ elif section == "Adversarial Attacks":
 elif section == "Explainability":
     st.header("Explainability with SHAP")
     
-    # Create a SHAP explainer using the DeepExplainer for TensorFlow/Keras models
-    explainer = shap.DeepExplainer(model, X_train)  # Adjusting explainer for Keras model
+    # Pre-compute SHAP values if not already done
+    if 'shap_values' not in st.session_state:
+        st.session_state.shap_values = explainer.shap_values(X_test)
 
     # Feature importance plot
     st.subheader("Feature Importance Plot (SHAP)")
-    shap_values = explainer.shap_values(X_test)
-    
-    # You may want to visualize the first output if it’s a binary classification
-    shap.summary_plot(shap_values[1], X_test, show=False)  # Use shap_values[1] for the positive class
+    shap.summary_plot(st.session_state.shap_values[1], X_test, show=False)
     st.pyplot()
     
     # Per-transaction explanation
@@ -117,8 +115,9 @@ elif section == "Explainability":
     st.write(f"Transaction: {X_test[idx]}")
     
     # Show SHAP force plot for the selected transaction
-    shap.force_plot(explainer.expected_value[1], shap_values[1][idx], X_test[idx], matplotlib=True)
+    shap.force_plot(explainer.expected_value[1], st.session_state.shap_values[1][idx], X_test[idx], matplotlib=True)
     st.pyplot()
+
 
 # Interactive Prediction Tool Section
 elif section == "Interactive Prediction Tool":
