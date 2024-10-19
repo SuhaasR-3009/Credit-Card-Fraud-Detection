@@ -102,28 +102,30 @@ elif section == "Explainability":
     
     # Initialize the explainer if not already done
     if 'explainer' not in st.session_state:
-        st.session_state.explainer = shap.DeepExplainer(model, X_train)  # Use DeepExplainer for Keras models
+        # Use KernelExplainer instead of DeepExplainer
+        st.session_state.explainer = shap.KernelExplainer(model.predict, X_train)
 
     # Limit the sample size for SHAP calculation
     sample_size = min(100, len(X_test))  # Adjust the sample size as needed
+    X_sample = X_test[:sample_size]
 
     # Calculate SHAP values
     try:
         with st.spinner("Calculating SHAP values..."):
-            shap_values = st.session_state.explainer.shap_values(X_test[:sample_size])
+            shap_values = st.session_state.explainer.shap_values(X_sample)
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
-        shap.summary_plot(shap_values[1], X_test[:sample_size], show=False)
+        shap.summary_plot(shap_values, X_sample, show=False)
         st.pyplot()
         
         # Per-transaction explanation
         st.subheader("Per-Transaction Explanation")
         idx = st.slider("Select Transaction Index", 0, sample_size - 1)
-        st.write(f"Transaction: {X_test[idx]}")
+        st.write(f"Transaction: {X_sample[idx]}")
         
         # Show SHAP force plot for the selected transaction
-        shap.force_plot(st.session_state.explainer.expected_value[1], shap_values[1][idx], X_test[idx], matplotlib=True)
+        shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True)
         st.pyplot()
 
     except Exception as e:
