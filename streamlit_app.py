@@ -102,7 +102,6 @@ elif section == "Explainability":
 
     # Initialize the explainer if not already done
     if 'explainer' not in st.session_state:
-        # Use KernelExplainer as a fallback
         st.session_state.explainer = shap.KernelExplainer(model.predict, X_train)
 
     # Limit the sample size for SHAP calculation
@@ -128,13 +127,11 @@ elif section == "Explainability":
         st.write(f"Transaction: {X_sample[idx]}")
 
         # Show SHAP force plot for the selected transaction
-        fig_force, ax_force = plt.subplots()  # Create a new figure for the force plot
-        shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True, ax=ax_force)
-        st.pyplot(fig_force)  # Pass the figure to st.pyplot
+        force_fig = shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx])
+        st.components.v1.html(force_fig.html, width=700, height=400, scrolling=True)
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
-
 
 
 # Interactive Prediction Tool Section
