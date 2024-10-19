@@ -33,7 +33,7 @@ y_adv = y_test  # Assuming labels remain the same for this example
 
 # Function to calculate model performance
 def get_model_performance(model, X, y):
-    y_pred = (model.predict(X) > 0.5).astype(int)  # Assuming binary classification with sigmoid
+    y_pred = (model.predict(X) > 0.5).astype("int32")  # Assuming binary classification with sigmoid
     acc = accuracy_score(y, y_pred)
     precision = precision_score(y, y_pred)
     recall = recall_score(y, y_pred)
