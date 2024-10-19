@@ -99,31 +99,43 @@ elif section == "Adversarial Attacks":
     st.write(f"Original Prediction: {'Fraud' if original_pred == 1 else 'Not Fraud'}")
     st.write(f"Adversarial Prediction: {'Fraud' if adv_pred == 1 else 'Not Fraud'}")
 
-# Explainability section
+# Explainability Section
 elif section == "Explainability":
-    st.header("Explainability with SHAP")
+    st.header("Explainability with Seaborn")
 
-    # Train SHAP explainer (using a small subset of the training data)
-    st.subheader("Feature Importance (SHAP Summary Plot)")
-    # Initializing SHAP DeepExplainer
-    with st.spinner("Calculating SHAP values..."):
-        explainer = shap.DeepExplainer(model, X_train[:100])  # Initialize with a subset of training data
-        shap_values = explainer.shap_values(X_test)           # Get SHAP values for test data
+    # Feature Importance
+    feature_importance = model.feature_importances_
+    features = X.columns
 
-    # SHAP Summary Plot (Feature Importance)
-    shap.summary_plot(shap_values, X_test,show=True,plot_type='bar')
-    st.pyplot()  # Display the SHAP summary plot in Streamlit
-    
-    # Per-transaction explanation (Force Plot)
-    st.subheader("Per-Transaction SHAP Explanation")
-    
-    # Slider to select a specific transaction
-    idx = st.slider("Select Transaction Index", 0, len(X_test) - 1)
-    st.write(f"Transaction details: {X_test.iloc[idx]}")
+    # Create a DataFrame for visualization
+    importance_df = pd.DataFrame({'Feature': features, 'Importance': feature_importance})
+    importance_df = importance_df.sort_values(by='Importance', ascending=False)
 
-    # Force plot for the selected transaction
-    force_plot = shap.force_plot(explainer.expected_value[0], shap_values[0][idx], features=X_test.iloc[idx], matplotlib=True)
-    st.pyplot(force_plot)  # Display SHAP force plot
+    # Plot Feature Importance using Seaborn
+    st.subheader("Feature Importance Plot")
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='Importance', y='Feature', data=importance_df)
+    st.pyplot()
+
+    # Correlation Heatmap
+    st.subheader("Feature Correlation Heatmap")
+    plt.figure(figsize=(10, 8))
+    correlation_matrix = data.corr()
+    sns.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap='coolwarm')
+    st.pyplot()
+
+    # Pairplot for Feature Relationships
+    st.subheader("Pairplot of Features")
+    if st.checkbox("Show Pairplot (may take time)"):
+        sns.pairplot(data, hue='target_variable_column')  # Replace with your target variable column name
+        st.pyplot()
+
+    # Allow user to select a feature to visualize against the target
+    selected_feature = st.selectbox("Select a feature to visualize against the target", features)
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x=y, y=data[selected_feature])
+    plt.title(f"{selected_feature} vs Target")
+    st.pyplot()
         
 
 # Interactive Prediction Tool Section
