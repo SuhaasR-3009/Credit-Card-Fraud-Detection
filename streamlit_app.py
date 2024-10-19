@@ -118,12 +118,12 @@ elif section == "Explainability":
         
         # Create a figure for the summary plot
         fig, ax = plt.subplots()
-        shap.summary_plot(shap_values, X_sample, show=False)  # Do not pass ax here
-        st.pyplot(fig)  # Pass the figure to st.pyplot
+        shap.summary_plot(shap_values, X_sample, show=False)
+        st.pyplot(fig)
 
         # Per-transaction explanation
         st.subheader("Per-Transaction Explanation")
-        idx = st.slider("Select Transaction Index", 0, sample_size - 1)
+        idx = st.slider("Select Transaction Index", 0, sample_size - 1)  # Adjust slider range based on sample_size
         st.write(f"Transaction: {X_sample[idx]}")
 
         # Show SHAP force plot for the selected transaction
@@ -132,6 +132,7 @@ elif section == "Explainability":
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
+
 
 
 # Interactive Prediction Tool Section
