@@ -116,9 +116,7 @@ elif section == "Explainability":
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
-        shap.summary_plot(shap_values, X_sample, show=False)
-        handles, labels = ax.get_legend_handles_labels()  # Get existing handles and labels
-        ax.legend(handles, labels, title='Feature Importance', loc='upper right')
+        shap.summary_plot(shap_values, X_sample, show=True)
         st.pyplot()
 
         # Per-transaction explanation
