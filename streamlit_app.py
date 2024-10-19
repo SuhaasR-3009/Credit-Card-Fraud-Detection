@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import lime
 import shap
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
@@ -17,8 +16,12 @@ data = pd.read_csv('creditcards.csv')  # Replace with your actual dataset path
 X = data.iloc[:,:-1].values  # Adjust to your actual features
 y = data.iloc[:,-1].values  # Adjust to your actual target column
 
+def st_shap(plot, height=None):
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    components.html(shap_html, height=height)
+
 # Split dataset into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42,stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Function to create adversarial examples
 def generate_adversarial_examples(X, epsilon=0.1):
@@ -96,37 +99,32 @@ elif section == "Adversarial Attacks":
     st.write(f"Original Prediction: {'Fraud' if original_pred == 1 else 'Not Fraud'}")
     st.write(f"Adversarial Prediction: {'Fraud' if adv_pred == 1 else 'Not Fraud'}")
 
-# Explainability Section
+# Explainability section
 elif section == "Explainability":
     st.header("Explainability with SHAP")
 
-    # Use KernelExplainer as a fallback for performance
-    if 'explainer' not in st.session_state:
-        st.session_state.explainer = shap.KernelExplainer(model.predict, X_train[:100])  # Limit train data
+    # Train SHAP explainer (using a small subset of the training data)
+    st.subheader("Feature Importance (SHAP Summary Plot)")
+    
+    # Initializing SHAP DeepExplainer
+    with st.spinner("Calculating SHAP values..."):
+        explainer = shap.DeepExplainer(model, X_train[:100].values)  # Initialize with a subset of training data
+        shap_values = explainer.shap_values(X_test.values)           # Get SHAP values for test data
 
-    try:
-        with st.spinner("Calculating SHAP values..."):
-            sample_size = min(50, len(X_test))  # Limit to 50 samples for speed
-            X_sample = X_test[:sample_size]
-            shap_values = st.session_state.explainer.shap_values(X_sample)
+    # SHAP Summary Plot (Feature Importance)
+    shap.summary_plot(shap_values[0], features=X_test, plot_type="dot", feature_names=X.columns)
+    st.pyplot()  # Display the SHAP summary plot in Streamlit
 
-        # Feature importance plot
-        st.subheader("Feature Importance Plot (SHAP)")
-        fig, ax = plt.subplots()
-        shap.summary_plot(shap_values, features=X_sample, plot_type="dot", show=False)
-        st.pyplot(fig)
+    # Per-transaction explanation (Force Plot)
+    st.subheader("Per-Transaction SHAP Explanation")
+    
+    # Slider to select a specific transaction
+    idx = st.slider("Select Transaction Index", 0, len(X_test) - 1)
+    st.write(f"Transaction details: {X_test.iloc[idx]}")
 
-        # Per-transaction explanation (force plot)
-        st.subheader("Per-Transaction Explanation")
-        idx = st.slider("Select Transaction Index", 0, sample_size - 1)
-        st.write(f"Transaction: {X_sample.iloc[idx]}")
-
-        # Show SHAP force plot for the selected transaction
-        force_plot = shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], features=X_sample.iloc[idx])
-        st.components.v1.html(force_plot.html(), width=800, height=400)
-
-    except Exception as e:
-        st.error(f"Error calculating SHAP values: {e}")
+    # Force plot for the selected transaction
+    force_plot = shap.force_plot(explainer.expected_value[0], shap_values[0][idx], features=X_test.iloc[idx], matplotlib=True)
+    st.pyplot(force_plot)  # Display SHAP force plot
         
 
 # Interactive Prediction Tool Section
