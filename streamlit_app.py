@@ -105,11 +105,10 @@ elif section == "Explainability":
 
     # Train SHAP explainer (using a small subset of the training data)
     st.subheader("Feature Importance (SHAP Summary Plot)")
-    
     # Initializing SHAP DeepExplainer
     with st.spinner("Calculating SHAP values..."):
-        explainer = shap.DeepExplainer(model, X_train[:100].values)  # Initialize with a subset of training data
-        shap_values = explainer.shap_values(X_test.values)           # Get SHAP values for test data
+        explainer = shap.DeepExplainer(model, X_train[:100])  # Initialize with a subset of training data
+        shap_values = explainer.shap_values(X_test)           # Get SHAP values for test data
 
     # SHAP Summary Plot (Feature Importance)
     shap.summary_plot(shap_values[0], features=X_test, plot_type="dot", feature_names=X.columns)
