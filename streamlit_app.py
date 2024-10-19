@@ -115,15 +115,21 @@ elif section == "Explainability":
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
-        
+
         # Create a figure for the summary plot
         fig, ax = plt.subplots()
         shap.summary_plot(shap_values, X_sample, show=False)
+
+        # Add custom legend
+        handles, labels = ax.get_legend_handles_labels()  # Get existing handles and labels
+        ax.legend(handles, labels, title='Feature Importance', loc='upper right')
+
+        # Show the plot
         st.pyplot(fig)
 
         # Per-transaction explanation
         st.subheader("Per-Transaction Explanation")
-        idx = st.slider("Select Transaction Index", 0, sample_size - 1)  # Adjust slider range based on sample_size
+        idx = st.slider("Select Transaction Index", 0, sample_size - 1)
         st.write(f"Transaction: {X_sample[idx]}")
 
         # Show SHAP force plot for the selected transaction
@@ -132,7 +138,6 @@ elif section == "Explainability":
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
-
 
 
 # Interactive Prediction Tool Section
