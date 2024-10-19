@@ -111,7 +111,7 @@ elif section == "Explainability":
         shap_values = explainer.shap_values(X_test)           # Get SHAP values for test data
 
     # SHAP Summary Plot (Feature Importance)
-    shap.summary_plot(shap_values[0], features=X_test, plot_type="dot", feature_names=X.columns)
+    shap.summary_plot(shap_values[0], features=X_test, plot_type="dot")
     st.pyplot()  # Display the SHAP summary plot in Streamlit
 
     # Per-transaction explanation (Force Plot)
