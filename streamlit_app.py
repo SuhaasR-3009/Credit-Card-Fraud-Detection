@@ -100,24 +100,34 @@ elif section == "Adversarial Attacks":
 elif section == "Explainability":
     st.header("Explainability with SHAP")
     
-    # Pre-compute SHAP values if not already done
-    if 'shap_values' not in st.session_state:
-        st.session_state.shap_values = explainer.shap_values(X_test)
+    # Initialize the explainer if not already done
+    if 'explainer' not in st.session_state:
+        st.session_state.explainer = shap.DeepExplainer(model, X_train)  # Use DeepExplainer for Keras models
 
-    # Feature importance plot
-    st.subheader("Feature Importance Plot (SHAP)")
-    shap.summary_plot(st.session_state.shap_values[1], X_test, show=False)
-    st.pyplot()
-    
-    # Per-transaction explanation
-    st.subheader("Per-Transaction Explanation")
-    idx = st.slider("Select Transaction Index", 0, len(X_test)-1)
-    st.write(f"Transaction: {X_test[idx]}")
-    
-    # Show SHAP force plot for the selected transaction
-    shap.force_plot(explainer.expected_value[1], st.session_state.shap_values[1][idx], X_test[idx], matplotlib=True)
-    st.pyplot()
+    # Limit the sample size for SHAP calculation
+    sample_size = min(100, len(X_test))  # Adjust the sample size as needed
 
+    # Calculate SHAP values
+    try:
+        with st.spinner("Calculating SHAP values..."):
+            shap_values = st.session_state.explainer.shap_values(X_test[:sample_size])
+
+        # Feature importance plot
+        st.subheader("Feature Importance Plot (SHAP)")
+        shap.summary_plot(shap_values[1], X_test[:sample_size], show=False)
+        st.pyplot()
+        
+        # Per-transaction explanation
+        st.subheader("Per-Transaction Explanation")
+        idx = st.slider("Select Transaction Index", 0, sample_size - 1)
+        st.write(f"Transaction: {X_test[idx]}")
+        
+        # Show SHAP force plot for the selected transaction
+        shap.force_plot(st.session_state.explainer.expected_value[1], shap_values[1][idx], X_test[idx], matplotlib=True)
+        st.pyplot()
+
+    except Exception as e:
+        st.error(f"Error calculating SHAP values: {e}")
 
 # Interactive Prediction Tool Section
 elif section == "Interactive Prediction Tool":
