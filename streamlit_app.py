@@ -102,6 +102,7 @@ elif section == "Explainability":
 
     # Initialize the explainer if not already done
     if 'explainer' not in st.session_state:
+        # Use KernelExplainer as a fallback
         st.session_state.explainer = shap.KernelExplainer(model.predict, X_train)
 
     # Limit the sample size for SHAP calculation
@@ -115,17 +116,10 @@ elif section == "Explainability":
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
-
-        # Create a figure for the summary plot
-        fig, ax = plt.subplots()
         shap.summary_plot(shap_values, X_sample, show=False)
-
-        # Add custom legend
         handles, labels = ax.get_legend_handles_labels()  # Get existing handles and labels
         ax.legend(handles, labels, title='Feature Importance', loc='upper right')
-
-        # Show the plot
-        st.pyplot(fig)
+        st.pyplot()
 
         # Per-transaction explanation
         st.subheader("Per-Transaction Explanation")
@@ -133,12 +127,12 @@ elif section == "Explainability":
         st.write(f"Transaction: {X_sample[idx]}")
 
         # Show SHAP force plot for the selected transaction
-        force_fig = shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx])
-        st.components.v1.html(force_fig.html, width=700, height=400, scrolling=True)
+        shap.force_plot(st.session_state.explainer.expected_value, shap_values[idx], X_sample[idx], matplotlib=True)
+        st.pyplot()
 
     except Exception as e:
         st.error(f"Error calculating SHAP values: {e}")
-
+        
 
 # Interactive Prediction Tool Section
 elif section == "Interactive Prediction Tool":
