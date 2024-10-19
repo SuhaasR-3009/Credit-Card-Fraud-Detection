@@ -103,12 +103,12 @@ elif section == "Explainability":
     # Use DeepExplainer for the model
     if 'explainer' not in st.session_state:
         # Use DeepExplainer with a subset of training data
-        st.session_state.explainer = shap.DeepExplainer(model, X_train[:10].values)  # Only use a subset to speed up SHAP computation
+        st.session_state.explainer = shap.DeepExplainer(model, X_train[:10])  # No need to use .values
 
     try:
         with st.spinner("Calculating SHAP values..."):
             # Calculate SHAP values for the test set
-            shap_values = st.session_state.explainer.shap_values(X_test.values)
+            shap_values = st.session_state.explainer.shap_values(X_test)  # No need to use .values
 
         # Feature importance plot
         st.subheader("Feature Importance Plot (SHAP)")
